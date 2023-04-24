@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - id: imagename
-        uses: Entepotenz/change-string-case-action@v1
+        uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ github.repository }}
       - uses: actions/checkout@v3
