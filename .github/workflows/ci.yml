@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  test-container:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build docker container
+        id: docker
+        uses: docker/build-push-action@v4
+        with:
+          context: ./container/
+          file: container/Dockerfile
+          load: true
+          push: false
+          tags: ${{ github.repository }}:latest
+      - name: Set environment variables for your solver
+        run: |
+          echo JAVA_OPTS="-Xms${MEM_LIMIT_GB}g -Xmx${MEM_LIMIT_GB}g" > .env
+        env:
+          MEM_LIMIT_GB: 7 # memory limit for Github hosted runner
+      - name: Run test suite
+        run: |
+          ${{ github.workspace }}/.github/workflows/run-tests.sh $TIMEOUT ${{ github.repository }}:latest .env ${{ github.workspace }}/container/test-instances results "$EXTRA_ARGS"
+        env:
+          TIMEOUT: 30
+          EXTRA_ARGS: ""
+      - name: Show summary
+        if: ${{ always() }}
+        run: |
+          # `cat results/result.md` does not work with $GITHUB_STEP_SUMMARY
+          cat results/result.md | while read line
+          do
+            echo $line >> $GITHUB_STEP_SUMMARY
+          done
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() }}
+        with:
+          name: results
+          path: results
+
+  test-description:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v2
+        with:
+          working_directory: description
+          root_file: main.tex
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Description
+          path: description/main.pdf
