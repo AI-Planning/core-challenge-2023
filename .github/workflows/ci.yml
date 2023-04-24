@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - id: imagename
+        uses: Entepotenz/change-string-case-action@v1
+        with:
+          string: ${{ github.repository }}
       - uses: actions/checkout@v3
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -27,7 +31,7 @@ jobs:
           file: container/Dockerfile
           load: true
           push: false
-          tags: ${{ github.repository }}:latest
+          tags: ${{ steps.imagename.outputs.lowercase }}:latest
       - name: Set environment variables for your solver
         run: |
           echo JAVA_OPTS="-Xms${MEM_LIMIT_GB}g -Xmx${MEM_LIMIT_GB}g" > .env
