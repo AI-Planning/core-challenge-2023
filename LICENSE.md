@@ -2,7 +2,7 @@ This repository contains several independent software with different licenses si
 
 The following directories are under the mentioned licenses.
 
-* [./src/scorpion/src/search/ext](./src/symk/src/search/ext)
+* [./src/scorpion/src/search/ext](./src/scorpion/src/search/ext)
 * [./src/symk/src/search/ext](./src/symk/src/search/ext)
 * [./src/symk/src/search/sdac_parser/boost_dependencies](./src/symk/src/search/sdac_parser/boost_dependencies) see [Boost Software License Version 1.0](http://www.boost.org/LICENSE_1_0.txt)
 * [./src/symk/src/dd_libs/cudd-3.0.0](./src/symk/src/dd_libs/cudd-3.0.0): see [BSD 3-Clause "New" or "Revised" License](./src/symk/src/dd_libs/cudd-3.0.0/LICENSE)
