@@ -41,10 +41,10 @@ RUN if [ -f "$CPLEX_INSTALLER" ]; then \
 RUN git clone --depth 1 https://github.com/AI-Planning/core-challenge-2023.git /core-challenge-2023
 
 # Build Scorpion.
-RUN cd /core-challenge-2023/scorpion && ./build.py && strip --strip-all builds/release/bin/downward
+RUN cd /core-challenge-2023/src/scorpion && ./build.py && strip --strip-all builds/release/bin/downward
 
 # Build SymK.
-RUN cd /core-challenge-2023/symk && ./build.py && strip --strip-all builds/release/bin/downward
+RUN cd /core-challenge-2023/src/symk && ./build.py && strip --strip-all builds/release/bin/downward
 
 
 #################
@@ -66,12 +66,12 @@ RUN pip3 install cheetah3
 
 # Copy the relevant files from the previous docker build into this build.
 WORKDIR /solvers/scorpion
-COPY --from=builder /core-challenge-2023/src/scorpion/fast-downward.py .
+COPY --from=builder /core-challenge-2023/src/scorpion/fast-downward.py ./
 COPY --from=builder /core-challenge-2023/src/scorpion/builds/release/bin/ ./builds/release/bin/
 COPY --from=builder /core-challenge-2023/src/scorpion/driver ./driver
 
 WORKDIR /solvers/symk
-COPY --from=builder /core-challenge-2023/src/symk/fast-downward.py .
+COPY --from=builder /core-challenge-2023/src/symk/fast-downward.py ./
 COPY --from=builder /core-challenge-2023/src/symk/builds/release/bin/ ./builds/release/bin/
 COPY --from=builder /core-challenge-2023/src/symk/driver ./driver
 
@@ -79,7 +79,7 @@ WORKDIR /solvers/mip
 COPY --from=builder /core-challenge-2023/src/mip .
 COPY --from=builder /usr/local/lib/python3.8/dist-packages/ /usr/local/lib/python3.8/dist-packages/
 
-WORKDIR /driver
+WORKDIR /solvers/driver
 COPY --from=builder /core-challenge-2023/src/driver .
 
-ENTRYPOINT ["/core-challenge-2023/src/driver/run.py"]
+ENTRYPOINT ["/solvers/driver/run.py"]
