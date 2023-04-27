@@ -20,17 +20,18 @@ RUN DEBIAN_FRONTEND=noninteractive \
         libgmp3-dev     \
         python3         \
         python3-distutils \
+        python3-pip \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Build the CPLEX solver if available, otherwise fall back to SCIP.
 # We use Dockerfile as a sentinel (see https://stackoverflow.com/a/46801962).
-COPY Dockerfile cplex_studio2211.linux_x86_64.bin* .
+COPY Dockerfile cplex_studio2211.linux_x86_64.bin* /
 ENV CPLEX_INSTALLER=/cplex_studio2211.linux_x86_64.bin
-ENV CPLEX_ROOT=/opt/ibm/ILOG/CPLEX_Studio221/
+ENV CPLEX_ROOT=/opt/ibm/ILOG/CPLEX_Studio2211/
 RUN if [ -f "$CPLEX_INSTALLER" ]; then \
         chmod u+x $CPLEX_INSTALLER && \
-        ./$CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -i silent && \
+        $CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -i silent && \
         python3 $CPLEX_ROOT/python/setup.py install && \
         rm -r $CPLEX_INSTALLER; \
     else \
