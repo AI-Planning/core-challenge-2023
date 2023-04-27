@@ -66,20 +66,20 @@ RUN pip3 install cheetah3
 
 # Copy the relevant files from the previous docker build into this build.
 WORKDIR /solvers/scorpion
-COPY --from=builder /core-challenge-2023/scorpion/fast-downward.py .
-COPY --from=builder /core-challenge-2023/scorpion/builds/release/bin/ ./builds/release/bin/
-COPY --from=builder /core-challenge-2023/scorpion/driver ./driver
+COPY --from=builder /core-challenge-2023/src/scorpion/fast-downward.py .
+COPY --from=builder /core-challenge-2023/src/scorpion/builds/release/bin/ ./builds/release/bin/
+COPY --from=builder /core-challenge-2023/src/scorpion/driver ./driver
 
 WORKDIR /solvers/symk
-COPY --from=builder /core-challenge-2023/symk/fast-downward.py .
-COPY --from=builder /core-challenge-2023/symk/builds/release/bin/ ./builds/release/bin/
-COPY --from=builder /core-challenge-2023/symk/driver ./driver
+COPY --from=builder /core-challenge-2023/src/symk/fast-downward.py .
+COPY --from=builder /core-challenge-2023/src/symk/builds/release/bin/ ./builds/release/bin/
+COPY --from=builder /core-challenge-2023/src/symk/driver ./driver
 
 WORKDIR /solvers/mip
-COPY --from=builder /core-challenge-2023/mip .
+COPY --from=builder /core-challenge-2023/src/mip .
 COPY --from=builder /usr/local/lib/python3.8/dist-packages/ /usr/local/lib/python3.8/dist-packages/
 
 WORKDIR /driver
-COPY --from=builder /core-challenge-2023/driver .
+COPY --from=builder /core-challenge-2023/src/driver .
 
-ENTRYPOINT ["/core-challenge-2023/driver/run.py"]
+ENTRYPOINT ["/core-challenge-2023/src/driver/run.py"]
