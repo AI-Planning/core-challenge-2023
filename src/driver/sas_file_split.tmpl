@@ -1,0 +1,89 @@
+#from Cheetah.Template import Template
+#extends Template
+begin_version
+3
+end_version
+begin_metric
+0
+end_metric
+${len($graph)+1}
+#for $node in $sorted($graph)
+begin_variable
+node_${node}
+-1
+2
+Atom node_${node}_free()
+Atom node_${node}_occupied()
+end_variable
+#end for
+#set hand=$len($graph)
+begin_variable
+hand
+-1
+2
+Atom empty()
+Atom full()
+end_variable
+0
+## TODO: we could encode mutex groups here for neighboring nodes to be occupied
+begin_state
+## state of all nodes
+#for $node in $sorted($graph)
+#if $node in $start
+1
+#else
+0
+#end if
+#end for
+## state of the hand (always starts empty)
+0
+end_state
+begin_goal
+${len($target)+1}
+#for $node in $sorted($target)
+$node 1
+## TODO: could try to mention other nodes as not occupied explicitly
+#end for
+## The hand must be empty at the end.
+$hand 0
+end_goal
+${2*len($graph)}
+## Pick actions
+#for $node in $sorted($graph)
+begin_operator
+pick $node
+## prevail
+0
+## prepost
+## node changes from occupied to free
+## hand changes from empty to full
+2
+0 $node 1 0
+0 $hand 0 1
+## cost
+0
+end_operator
+#end for
+## Place actions
+#for $node in $sorted($graph)
+begin_operator
+place $node
+## prevail
+## Neighbors of node must be empty so adding a token there does not
+## violate the condition of an independent set.
+${len($graph[$node])}
+#for $neighbor in $graph[$node]
+$neighbor 0
+#end for
+## prepost
+## node changes from free to occupied
+## hand changes from full to empty
+2
+0 $node 0 1
+0 $hand 1 0
+## cost
+0
+end_operator
+#end for
+## No axioms
+0

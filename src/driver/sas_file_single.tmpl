@@ -1,0 +1,68 @@
+#from Cheetah.Template import Template
+#extends Template
+begin_version
+3
+end_version
+begin_metric
+0
+end_metric
+$len($graph)
+#for $node in $sorted($graph)
+begin_variable
+node_${node}
+-1
+2
+Atom node_${node}_free()
+Atom node_${node}_occupied()
+end_variable
+#end for
+0
+## TODO: we could encode mutex groups here for neighboring nodes to be occupied
+begin_state
+#for $node in $sorted($graph)
+#if $node in $start
+1
+#else
+0
+#end if
+#end for
+end_state
+begin_goal
+$len($target)
+#for $node in $sorted($target)
+$node 1
+## TODO: could try to mention other nodes as not occupied explicitly
+#end for
+end_goal
+${len($graph)**2 - len($graph)}
+#for $from_node in $sorted($graph)
+#for $to_node in $sorted($graph)
+#if $from_node != $to_node
+begin_operator
+move $from_node $to_node
+## prevail
+## Neighbors of to_node must be empty so adding a token there does not
+## violate the condition of an independent set.
+## There is an exception for from_node if it is a neighbor of to_node
+## because its value changes from occupied to free, so it is not a
+## prevail condition.
+${len($graph[to_node] - set([from_node]))}
+#for $neighbor in $graph[to_node]
+#if $neighbor != $from_node
+$neighbor 0
+#end if
+#end for
+## prepost
+## from_node changes from occupied to free
+## to_node changes from free to occupied
+2
+0 $from_node 1 0
+0 $to_node 0 1
+## cost
+0
+end_operator
+#end if
+#end for
+#end for
+## No axioms
+0
