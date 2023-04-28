@@ -41,10 +41,10 @@ do
         DATFILE=/tests/${t}_01.dat
 
         # Replace placeholders in parameters
-        params=$(echo "$params" | sed "s/TIMEOUT/$TIMEOUT/g")
-        params=$(echo "$params" | sed "s/MAX_MEMORY_SIZE/$MAX_MEMORY_SIZE/g")
-        params=$(echo "$params" | sed "s/COLFILE/$COLFILE/g")
-        params=$(echo "$params" | sed "s/DATFILE/$DATFILE/g")
+        params=$(echo "$params" | sed "s|TIMEOUT|$TIMEOUT|g")
+        params=$(echo "$params" | sed "s|MAX_MEMORY_SIZE|$MAX_MEMORY_SIZE|g")
+        params=$(echo "$params" | sed "s|COLFILE|$COLFILE|g")
+        params=$(echo "$params" | sed "s|DATFILE|$DATFILE|g")
 
         timeout 30 \
             docker run --rm -t -v $testdir:/tests --env-file $env $img $extra $params &> $resultdir/${config}-${t}-result.txt \
