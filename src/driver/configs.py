@@ -36,19 +36,22 @@ def better_response(r1, r2, track):
             # Instance is guaranteed to be unsolvable.
             return response
 
-    # If we end up here, both solutions have finite values.
+    # If we end up here, both solutions have values.
     if track == SHORTEST_TRACK:
         if r1.cost <= r2.cost:
             return r1
         else:
             return r2
     elif track == LONGEST_TRACK:
-        if r1.cost >= r2.cost:
+        if r1.cost >= r2.cost and r1.cost < float("inf"):
             return r1
         else:
             return r2
     elif track == EXISTENT_TRACK:
-        return r1
+        if r1.cost < float("inf"):
+            return r1
+        else:
+            return r2
 
 def is_best_response(response, track):
     if response is None:
@@ -78,8 +81,8 @@ class PortfolioConfig(object):
         """
         Run components in parallel, react to one of them finishing, decide wether to keep the others running.
         """
-        component_memory_limit = (memory_limit - PortfolioConfig.MEMORY_BUFFER_FOR_DRIVER) // len(self.components)
-        component_time_limit = time_limit - PortfolioConfig.TIME_BUFFER_FOR_RESPONSE - PortfolioConfig.TIME_BUFFER_FOR_SOLVERS - PortfolioConfig.TIME_BUFFER_FOR_TERMINATE
+        component_memory_limit = (memory_limit - MEMORY_BUFFER_FOR_DRIVER) // len(self.components)
+        component_time_limit = time_limit - TIME_BUFFER_FOR_RESPONSE - TIME_BUFFER_FOR_SOLVERS - TIME_BUFFER_FOR_TERMINATE
 
         best_response = None
         processes = []
@@ -92,16 +95,18 @@ class PortfolioConfig(object):
             processes.append(process)
 
         def on_process_terminate(process):
+            process.stdout.close()
+            process.stderr.close()
             new_response = process.command.parse_reponse(process, self.track)
             best_response = better_response(best_response, new_response, self.track)
             if is_best_response(best_response, self.track):
                 for p in processes:
                     p.terminate()
-                psutil.wait_procs(processes, timeout=PortfolioConfig.TIME_BUFFER_FOR_TERMINATE)
+                psutil.wait_procs(processes, timeout=TIME_BUFFER_FOR_TERMINATE)
                 for p in processes:
                     p.kill()
 
-        psutil.wait_procs(processes, timeout=time_limit - PortfolioConfig.TIME_BUFFER_FOR_RESPONSE, callback=on_process_terminate)
+        psutil.wait_procs(processes, timeout=time_limit - TIME_BUFFER_FOR_RESPONSE, callback=on_process_terminate)
         return best_response
 
 
@@ -111,8 +116,8 @@ class SingleConfig(object):
         self.component = component
 
     def run(self, run_dir, memory_limit, time_limit, col_filename, dat_filename, sas_filename):
-        component_memory_limit = memory_limit - PortfolioConfig.MEMORY_BUFFER_FOR_DRIVER
-        component_time_limit = time_limit - PortfolioConfig.TIME_BUFFER_FOR_RESPONSE - PortfolioConfig.TIME_BUFFER_FOR_SOLVERS
+        component_memory_limit = memory_limit - MEMORY_BUFFER_FOR_DRIVER
+        component_time_limit = time_limit - TIME_BUFFER_FOR_RESPONSE - TIME_BUFFER_FOR_SOLVERS
         process = self.component.start(run_dir, component_memory_limit, component_time_limit, col_filename, dat_filename, sas_filename)
         process.wait()
         return self.component.parse_reponse(process, self.track)
@@ -129,11 +134,11 @@ class PlannerCommand(object):
             resource.setrlimit(resource.RLIMIT_AS, memory_limit, hard_mem_limit)
             
         # Replace placeholders (limits, inputs) in cmd.
-        cmd = [part.format(**locals()) for part in cmd]
+        cmd = [part.format(**locals()) for part in self.cmd]
         # Start the planner.
         out_file = open(f"{run_dir}/run.log", "w")
         err_file = open(f"{run_dir}/run.err", "w")
-        process = psutil.Popen(self.cmd, cwd=run_dir, stdout=out_file, stderr=err_file, preexec_fn=prepare_call)
+        process = psutil.Popen(cmd, cwd=run_dir, stdout=out_file, stderr=err_file, preexec_fn=prepare_call)
         # Store information potentially needed by the parser.
         process.command = self
         process.run_dir = run_dir
