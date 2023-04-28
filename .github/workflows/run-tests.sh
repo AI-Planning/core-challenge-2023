@@ -74,23 +74,23 @@ do
     done
 
     cat << EOS >> $resultdir/result.md
-    # Configuration ${config}
-    - #Instances: $ntests
-    - Timeout: $to seconds
-    - Memory limit: $MAX_MEMORY_SIZE GB
+# Configuration ${config}
+- #Instances: $ntests
+- Timeout: $to seconds
+- Memory limit: $MAX_MEMORY_SIZE GB
 
-    ## Test results
+## Test results
 
-    | Instance | Result |
-    | :------: | :----: |
-    $(cat $resultdir/tmp.md)
+| Instance | Result |
+| :------: | :----: |
+$(cat $resultdir/tmp.md)
 
-    Legends:
-    - :white_check_mark:: The solver succeeded its execution with valid output
-    - :no_entry:: The solver succeeded its execution with invalid output
-    - :hourglass_flowing_sand:: The solver failed its execution due to timeout
-    - :collision:: The solver failed its execution for other reasons such as internal errors
-    EOS
+Legends:
+- :white_check_mark:: The solver succeeded its execution with valid output
+- :no_entry:: The solver succeeded its execution with invalid output
+- :hourglass_flowing_sand:: The solver failed its execution due to timeout
+- :collision:: The solver failed its execution for other reasons such as internal errors
+EOS
 
     rm -f $resultdir/tmp.md
 
