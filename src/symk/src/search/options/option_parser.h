@@ -11,6 +11,7 @@
 
 #include <cctype>
 #include <memory>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
