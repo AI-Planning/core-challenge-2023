@@ -21,46 +21,65 @@ if [ ! -e validator.py ]; then
     curl -fL https://raw.githubusercontent.com/core-challenge/isr-validator/main/main.py -o validator.py
 fi
 
-ntests=${#tests[@]}
-tfailed=0
-vfailed=0
-efailed=0
-
-for t in ${tests[@]}
+cat "$LAUNCH_OPTIONS" | while IFS= read -r line
 do
-    timeout 30 \
-        docker run --rm -t -v $testdir:/tests --env-file $env $img $extra /tests/${t}.col /tests/${t}_01.dat &> $resultdir/${t}-result.txt \
-        ; echo $? > $resultdir/${t}-code
-    code=$(cat $resultdir/${t}-code)
-    if [ "$code" -eq 0 ]; then
-        python3 validator.py $testdir/${t}.col $testdir/${t}_01.dat $resultdir/${t}-result.txt &> $resultdir/${t}-validator-result.txt \
-            ; echo $? > $resultdir/${t}-validator-code
-        vcode=$(cat $resultdir/${t}-validator-code)
-        if [ "$vcode" -eq 0 ]; then
-            echo "${t}: pass"
-            echo "| ${t} | :white_check_mark: |" >> $resultdir/tmp.md
-        else
-            echo "${t}: validation failed"
-            echo "| ${t} | :no_entry: |" >> $resultdir/tmp.md
-            ((vfailed++))
-        fi
-    elif [ "$code" -eq 124 ]; then
-        echo "${t}: timeout"
-        echo "| ${t} | :hourglass_flowing_sand: |" >> $resultdir/tmp.md
-        ((tfailed++))
-    else
-        echo "${t}: execution failed"
-        echo "| ${t} | :collision: |" >> $resultdir/tmp.md
-        ((efailed++))
+    # Ignore lines starting with #
+    if [[ $line =~ ^#.* ]]; then
+        continue
     fi
-done
+    config=$(echo "$line" | cut -d',' -f1)
+    params=$(echo "$line" | cut -d',' -f2-)
 
-cat << EOS > $resultdir/result.md
-# Configuration
+    ntests=${#tests[@]}
+    tfailed=0
+    vfailed=0
+    efailed=0
+
+    for t in ${tests[@]}
+    do
+        COLFILE=/tests/${t}.col
+        DATFILE=/tests/${t}_01.dat
+
+        # Replace placeholders in parameters
+        params=$(echo "$params" | sed "s/TIMEOUT/$TIMEOUT/g")
+        params=$(echo "$params" | sed "s/MAX_MEMORY_SIZE/$MAX_MEMORY_SIZE/g")
+        params=$(echo "$params" | sed "s/COLFILE/$COLFILE/g")
+        params=$(echo "$params" | sed "s/DATFILE/$DATFILE/g")
+
+        timeout 30 \
+            docker run --rm -t -v $testdir:/tests --env-file $env $img $extra $params &> $resultdir/${config}-${t}-result.txt \
+            ; echo $? > $resultdir/${t}-code
+        code=$(cat $resultdir/${t}-code)
+        if [ "$code" -eq 0 ]; then
+            python3 validator.py $testdir/${t}.col $testdir/${t}_01.dat $resultdir/${t}-result.txt &> $resultdir/${config}-${t}-validator-result.txt \
+                ; echo $? > $resultdir/${t}-validator-code
+            vcode=$(cat $resultdir/${t}-validator-code)
+            if [ "$vcode" -eq 0 ]; then
+                echo "${t}: pass"
+                echo "| ${t} | :white_check_mark: |" >> $resultdir/${config}.md
+            else
+                echo "${t}: validation failed"
+                echo "| ${t} | :no_entry: |" >> $resultdir/${config}.md
+                ((vfailed++))
+            fi
+        elif [ "$code" -eq 124 ]; then
+            echo "${t}: timeout"
+            echo "| ${t} | :hourglass_flowing_sand: |" >> $resultdir/${config}.md
+            ((tfailed++))
+        else
+            echo "${t}: execution failed"
+            echo "| ${t} | :collision: |" >> $resultdir/${config}.md
+            ((efailed++))
+        fi
+    done
+
+    cat << EOS >> $resultdir/result.md
+# Configuration ${config}
 - #Instances: $ntests
 - Timeout: $to seconds
+- Memory limit: $MAX_MEMORY_SIZE GB
 
-# Test results
+## Test results
 
 | Instance | Result |
 | :------: | :----: |
@@ -73,8 +92,9 @@ Legends:
 - :collision:: The solver failed its execution for other reasons such as internal errors
 EOS
 
-rm -f $resultdir/tmp.md
+    rm -f $resultdir/tmp.md
 
-echo "$((ntests-vfailed-tfailed-efailed))/${ntests} passed"
+    echo "$((ntests-vfailed-tfailed-efailed))/${ntests} passed"
 
-exit $((vfailed+efailed))
+    exit $((vfailed+efailed))
+done

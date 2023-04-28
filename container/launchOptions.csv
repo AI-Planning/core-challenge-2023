@@ -1,9 +1,9 @@
 # shortest1 is a single-engine solver. 
-shortest1,--config=shortest-single,--memory-limit=MAX_MEMORY_SIZE,--time-limit=1800,COLFILE,DATFILE
-shortest2,--config=shortest-portfolio,--memory-limit=MAX_MEMORY_SIZE,--time-limit=1800,COLFILE,DATFILE
+shortest1,--config=shortest-single,--memory-limit=MAX_MEMORY_SIZE,--time-limit=TIMELIMIT,COLFILE,DATFILE
+shortest2,--config=shortest-portfolio,--memory-limit=MAX_MEMORY_SIZE,--time-limit=TIMELIMIT,COLFILE,DATFILE
 # existent1 is a single-engine solver. 
-existent1,--config=existent-single,--memory-limit=MAX_MEMORY_SIZE,--time-limit=1800,COLFILE,DATFILE
-existent2,--config=existent-portfolio,--memory-limit=MAX_MEMORY_SIZE,--time-limit=1800,COLFILE,DATFILE
+existent1,--config=existent-single,--memory-limit=MAX_MEMORY_SIZE,--time-limit=TIMELIMIT,COLFILE,DATFILE
+existent2,--config=existent-portfolio,--memory-limit=MAX_MEMORY_SIZE,--time-limit=TIMELIMIT,COLFILE,DATFILE
 # longest1 is a single-engine solver. 
-longest1,--config=longest-single,--memory-limit=MAX_MEMORY_SIZE,--time-limit=1800,COLFILE,DATFILE
-longest2,--config=longest-portfolio,--memory-limit=MAX_MEMORY_SIZE,--time-limit=1800,COLFILE,DATFILE
+longest1,--config=longest-single,--memory-limit=MAX_MEMORY_SIZE,--time-limit=TIMELIMIT,COLFILE,DATFILE
+longest2,--config=longest-portfolio,--memory-limit=MAX_MEMORY_SIZE,--time-limit=TIMELIMIT,COLFILE,DATFILE
