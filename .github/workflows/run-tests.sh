@@ -21,6 +21,8 @@ if [ ! -e validator.py ]; then
     curl -fL https://raw.githubusercontent.com/core-challenge/isr-validator/main/main.py -o validator.py
 fi
 
+totalfailed=0
+
 cat "$LAUNCH_OPTIONS" | while IFS= read -r line
 do
     # Ignore lines starting with #
@@ -96,5 +98,7 @@ EOS
 
     echo "$((ntests-vfailed-tfailed-efailed))/${ntests} passed"
 
-    exit $((vfailed+efailed))
+    totalfailed=$((totalfailed+vfailed+efailed))
 done
+
+exit $((totalfailed))
