@@ -83,7 +83,7 @@ do
 
 | Instance | Result |
 | :------: | :----: |
-$(cat $resultdir/tmp.md)
+$(cat $resultdir/${config}.md)
 
 Legends:
 - :white_check_mark:: The solver succeeded its execution with valid output
@@ -92,7 +92,7 @@ Legends:
 - :collision:: The solver failed its execution for other reasons such as internal errors
 EOS
 
-    rm -f $resultdir/tmp.md
+    rm -f $resultdir/${config}.md
 
     echo "$((ntests-vfailed-tfailed-efailed))/${ntests} passed"
 
