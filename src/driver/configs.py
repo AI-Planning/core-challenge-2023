@@ -22,7 +22,7 @@ class Reponse(object):
         self.cost = cost
         self.is_shortest = is_shortest
         self.is_longest = is_longest
-    
+
     def __str__(self):
         return self.plan
 
@@ -214,8 +214,10 @@ class MIPPlanner(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        # TODO
-        raise NotImplementedError()
+        if process.returncode == 10:
+            return Response("a NO", float("inf"), is_shortest=True, is_longest=True)
+        else:
+            return None
 
 
 CONFIGS = {

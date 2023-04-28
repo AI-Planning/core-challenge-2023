@@ -11,9 +11,11 @@ RUN DEBIAN_FRONTEND=noninteractive \
     apt-get -y upgrade && \
     apt-get install -y \
         autoconf \
+        bash \
         build-essential \
         ca-certificates \
         cmake \
+        curl \
         default-jre     \
         g++ \
         git \
@@ -25,8 +27,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 # Build the CPLEX solver if available, otherwise fall back to SCIP.
-# We use Dockerfile as a sentinel (see https://stackoverflow.com/a/46801962).
-COPY Dockerfile cplex_studio2211.linux_x86_64.bin* /
+# We use the file sentinel so the copy works if CPLEX is not present
+# (see https://stackoverflow.com/a/46801962).
+COPY sentinel cplex_studio2211.linux_x86_64.bin* /
 ENV CPLEX_INSTALLER=/cplex_studio2211.linux_x86_64.bin
 ENV CPLEX_ROOT=/opt/ibm/ILOG/CPLEX_Studio2211/
 RUN if [ -f "$CPLEX_INSTALLER" ]; then \
@@ -39,6 +42,18 @@ RUN if [ -f "$CPLEX_INSTALLER" ]; then \
     fi
 
 RUN git clone --depth 1 https://github.com/AI-Planning/core-challenge-2023.git /core-challenge-2023
+
+# Build SCIP.
+ENV SCIP_INSTALLER=/scip_installer.sh
+ENV SCIPOPTDIR=/scip
+COPY scip_installer.sh $SCIP_INSTALLER
+#curl -fL https://www.scipopt.org/download/release/SCIPOptSuite-8.0.3-Linux-ubuntu.sh > $SCIP_INSTALLER && \
+RUN mkdir scip && \
+    cd scip && \
+    chmod u+x $SCIP_INSTALLER && \
+    $SCIP_INSTALLER --skip-licencse --exclude-subdir && \
+    rm $SCIP_INSTALLER && \
+    pip3 install pyscipopt
 
 # Build Scorpion.
 RUN cd /core-challenge-2023/src/scorpion && ./build.py && strip --strip-all builds/release/bin/downward
@@ -60,9 +75,12 @@ RUN DEBIAN_FRONTEND=noninteractive \
       python3  \
       python3-pip \
       time \
+      libgfortran5 \
+      liblapack-dev \
+      libtbb-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install cheetah3
+RUN pip3 install cheetah3 psutil
 
 # Copy the relevant files from the previous docker build into this build.
 WORKDIR /solvers/scorpion
@@ -77,9 +95,12 @@ COPY --from=builder /core-challenge-2023/src/symk/driver ./driver
 
 WORKDIR /solvers/mip
 COPY --from=builder /core-challenge-2023/src/mip .
+COPY --from=builder /scip/lib /scip/lib
+COPY --from=builder /scip/include /scip/include
 COPY --from=builder /usr/local/lib/python3.8/dist-packages/ /usr/local/lib/python3.8/dist-packages/
 
 WORKDIR /solvers/driver
 COPY --from=builder /core-challenge-2023/src/driver .
+
 
 ENTRYPOINT ["/solvers/driver/run.py"]
