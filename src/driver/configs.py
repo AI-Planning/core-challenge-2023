@@ -13,7 +13,7 @@ LONGEST_TRACK = "longest"
 EXISTENT_TRACK = "existent"
 
 
-class Reponse(object):
+class Response(object):
     def __init__(self, plan, cost, is_shortest, is_longest):
         """
         Use plan containing "a NO" together with cost=float('inf') and is_shortest=True for proven unsolvability.
@@ -23,8 +23,9 @@ class Reponse(object):
         self.is_shortest = is_shortest
         self.is_longest = is_longest
 
-    def __str__(self):
-        return self.plan
+    def generate_output(self, dat_filename):
+        with open(dat_filename) as f:
+            return f.read() + self.plan
 
 
 def better_response(r1, r2, track):
@@ -95,20 +96,27 @@ class PortfolioConfig(object):
             processes.append(process)
 
         def on_process_terminate(process):
-            process.stdout.close()
-            process.stderr.close()
             new_response = process.command.parse_reponse(process, self.track)
+            nonlocal best_response
             best_response = better_response(best_response, new_response, self.track)
             if is_best_response(best_response, self.track):
-                for p in processes:
-                    p.terminate()
-                psutil.wait_procs(processes, timeout=TIME_BUFFER_FOR_TERMINATE)
-                for p in processes:
-                    p.kill()
+                terminate_all(processes)
 
         psutil.wait_procs(processes, timeout=time_limit - TIME_BUFFER_FOR_RESPONSE, callback=on_process_terminate)
         return best_response
 
+def terminate_all(processes):
+    for p in processes:
+        try:
+            p.terminate()
+        except psutil.NoSuchProcess:
+            pass
+    psutil.wait_procs(processes, timeout=TIME_BUFFER_FOR_TERMINATE)
+    for p in processes:
+        try:
+            p.kill()
+        except psutil.NoSuchProcess:
+            pass
 
 class SingleConfig(object):
     def __init__(self, track, component):
@@ -131,10 +139,17 @@ class PlannerCommand(object):
         def prepare_call():
             resource.setrlimit(resource.RLIMIT_CPU, (time_limit-1, time_limit))
             _, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
-            resource.setrlimit(resource.RLIMIT_AS, memory_limit, hard_mem_limit)
-            
+            resource.setrlimit(resource.RLIMIT_AS, (memory_limit, hard_mem_limit))
+
         # Replace placeholders (limits, inputs) in cmd.
-        cmd = [part.format(**locals()) for part in self.cmd]
+        cmd = [part.format(
+            run_dir=run_dir,
+            memory_limit=memory_limit,
+            time_limit=time_limit,
+            col_filename=col_filename,
+            dat_filename=dat_filename,
+            sas_filename=sas_filename
+        ) for part in self.cmd]
         # Start the planner.
         out_file = open(f"{run_dir}/run.log", "w")
         err_file = open(f"{run_dir}/run.err", "w")
@@ -151,7 +166,8 @@ class PlannerCommand(object):
 
     def parse_reponse(self, process, track):
         # implement in derived classes: parse any plans, select the best one and return a response
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return None
 
 
 class ScorpionAnytime(PlannerCommand):
@@ -171,7 +187,8 @@ class ScorpionAnytime(PlannerCommand):
 
     def parse_reponse(self, process, track):
         # TODO
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return None
 
 
 class ScorpionFirstSolution(PlannerCommand):
@@ -184,7 +201,8 @@ class ScorpionFirstSolution(PlannerCommand):
 
     def parse_reponse(self, process, track):
         # TODO
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return None
 
 
 class SymKShortSolution(PlannerCommand):
@@ -194,7 +212,8 @@ class SymKShortSolution(PlannerCommand):
 
     def parse_reponse(self, process, track):
         # TODO
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return None
 
 
 class SymKLongSolution(PlannerCommand):
@@ -205,7 +224,8 @@ class SymKLongSolution(PlannerCommand):
 
     def parse_reponse(self, process, track):
         # TODO
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return None
 
 
 class MIPPlanner(PlannerCommand):

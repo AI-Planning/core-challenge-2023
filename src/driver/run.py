@@ -8,26 +8,31 @@ import tempfile
 from configs import CONFIGS
 from compile import compile
 
+def absolute_path(x):
+    return str(Path(x).resolve())
+
 def create_run_dir():
     # Depending on the answer to our email, we might change this to use cwd, or to use /tmp as base
-    return tempfile.TemporaryDirectory(prefix="run_dir", dir=".")
+    #return tempfile.TemporaryDirectory(prefix="run_dir_", dir=Path(".").resolve())
+    return tempfile.mkdtemp(prefix="run_dir_", dir=Path(".").resolve())
 
 
 def run_config(config, memory_limit, time_limit, col_filename, dat_filename):
     run_dir = create_run_dir()
     sas_filename = str(Path(run_dir) / "problem.sas")
     compile("split", col_filename, dat_filename, sas_filename)
-    config.run(run_dir, memory_limit, time_limit, col_filename, dat_filename, sas_filename)
-    print(config.response)
+    response = config.run(run_dir, memory_limit, time_limit, col_filename, dat_filename, sas_filename)
+    # Either print output to stdout or write to file, we don't know.
+    print(response.generate_output(dat_filename))
 
 
 def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", choices=CONFIGS.keys(), required=True)
-    parser.add_argument("--memory-limit")
-    parser.add_argument("--time-limit")
-    parser.add_argument("col_filename")
-    parser.add_argument("dat_filename")
+    parser.add_argument("--memory-limit", type=int)
+    parser.add_argument("--time-limit", type=int)
+    parser.add_argument("col_filename", type=absolute_path)
+    parser.add_argument("dat_filename", type=absolute_path)
     return parser.parse_args()
 
 
