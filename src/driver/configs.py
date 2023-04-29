@@ -181,8 +181,8 @@ class ScorpionAnytime(PlannerCommand):
                     lazy_wastar([hlm],w=5),
                     lazy_wastar([hlm],w=3),
                     lazy_wastar([hlm],w=2),
-                    lazy_wastar([hlm],w=1)
-                    ],repeat_last=true,continue_on_fail=false)"""]
+                    astar(hlm)
+                    ],repeat_last=false,continue_on_fail=false)"""]
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
