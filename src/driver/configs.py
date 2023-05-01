@@ -12,6 +12,9 @@ SHORTEST_TRACK = "shortest"
 LONGEST_TRACK = "longest"
 EXISTENT_TRACK = "existent"
 
+EXIT_SUCCESS = 0
+EXIT_SEARCH_UNSOLVED_INCOMPLETE = 12
+
 
 class Response(object):
     def __init__(self, plan, cost, is_shortest, is_longest):
@@ -26,6 +29,9 @@ class Response(object):
     def generate_output(self, dat_filename):
         with open(dat_filename) as f:
             return f.read() + self.plan
+
+
+UNSOLVABLE_RESPONSE = Response("a NO", float("inf"), is_shortest=True, is_longest=True)
 
 
 def better_response(r1, r2, track):
@@ -170,6 +176,30 @@ class PlannerCommand(object):
         return None
 
 
+def parse_scorpion_response(process):
+    exhausted_state_space = False
+    cost = None
+    with open(f"{process.run_dir}/run.log") as f:
+        for line in f:
+            if "Completely explored state space -- no solution!" in line:
+                exhausted_state_space = True
+            elif "Plan cost:" in line:
+                # At the end, this will be the cost of the last plan, which is the cheapest one.
+                cost = int(line.split()[-1])
+                # TODO: convert here or later?
+                # assert cost % 2 == 0
+                # steps = cost / 2
+
+    if process.returncode == EXIT_SUCCESS:
+        assert cost is not None
+        return Response("a YES", cost, is_shortest=exhausted_state_space, is_longest=False)
+    elif process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
+        return UNSOLVABLE_RESPONSE
+    else:
+        # TODO: Do we need to distinguish between other outcomes?
+        return None
+
+
 class ScorpionAnytime(PlannerCommand):
     def __init__(self):
         cmd = [SCORPION, "{sas_filename}",
@@ -186,9 +216,7 @@ class ScorpionAnytime(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        # TODO
-        #raise NotImplementedError()
-        return None
+        return parse_scorpion_response(process)
 
 
 class ScorpionFirstSolution(PlannerCommand):
@@ -200,9 +228,7 @@ class ScorpionFirstSolution(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        # TODO
-        #raise NotImplementedError()
-        return None
+        return parse_scorpion_response(process)
 
 
 class SymKShortSolution(PlannerCommand):
