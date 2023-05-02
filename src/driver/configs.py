@@ -1,5 +1,6 @@
 from pathlib import Path
 import psutil
+import re
 import resource
 
 SCRIPT_DIR = Path(__file__).parent
@@ -176,22 +177,31 @@ class PlannerCommand(object):
         return None
 
 
+def parse_cheapest_plan(run_dir: Path):
+    for plan_file in run_dir.glob("sas_plan*"):
+        with plan_file.open() as f:
+            lines = [line.strip() for line in f.readlines()]
+            if not lines:
+                continue
+            *plan, cost_line = lines
+            match = re.match(r"; cost = (\d+) \(unit cost\)", cost_line)
+            if not match:
+                continue
+            cost = int(match[1])
+            assert cost == len(plan)
+            return plan
+    return None
+
+
 def parse_scorpion_response(process):
     exhausted_state_space = False
-    cost = None
     with open(f"{process.run_dir}/run.log") as f:
-        for line in f:
-            if "Completely explored state space -- no solution!" in line:
-                exhausted_state_space = True
-            elif "Plan cost:" in line:
-                # At the end, this will be the cost of the last plan, which is the cheapest one.
-                cost = int(line.split()[-1])
-                # TODO: convert here or later?
-                # assert cost % 2 == 0
-                # steps = cost / 2
+        exhausted_state_space = any("Completely explored state space -- no solution!" in line for line in f)
 
     if process.returncode == EXIT_SUCCESS:
-        assert cost is not None
+        cheapest_plan = parse_cheapest_plan(Path(process.run_dir))
+        assert cheapest_plan is not None
+        cost = len(cheapest_plan)
         return Response("a YES", cost, is_shortest=exhausted_state_space, is_longest=False)
     elif process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
         return UNSOLVABLE_RESPONSE
