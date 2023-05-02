@@ -23,7 +23,10 @@ def run_config(config, memory_limit, time_limit, col_filename, dat_filename):
     compile("split", col_filename, dat_filename, sas_filename)
     response = config.run(run_dir, memory_limit, time_limit, col_filename, dat_filename, sas_filename)
     # Either print output to stdout or write to file, we don't know.
-    print(response.generate_output(dat_filename))
+    if response is not None:
+        print(response.generate_output(dat_filename))
+    else:
+        print("Response is None!")
 
 
 def parse_options():

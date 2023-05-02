@@ -56,10 +56,10 @@ RUN mkdir scip && \
     pip3 install pyscipopt
 
 # Build Scorpion.
-RUN cd /core-challenge-2023/src/scorpion && ./build.py && strip --strip-all builds/release/bin/downward
+RUN cd /core-challenge-2023/src/scorpion && ./build.py && strip --strip-all builds/release/bin/downward && strip --strip-all builds/release/bin/preprocess-h2
 
 # Build SymK.
-RUN cd /core-challenge-2023/src/symk && ./build.py && strip --strip-all builds/release/bin/downward
+RUN cd /core-challenge-2023/src/symk && ./build.py && strip --strip-all builds/release/bin/downward && strip --strip-all builds/release/bin/preprocess
 
 
 #################
@@ -80,7 +80,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libtbb-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install cheetah3 psutil
+RUN pip3 install cheetah3 psutil natsort==8.3.1
 
 # Copy the relevant files from the previous docker build into this build.
 WORKDIR /solvers/scorpion

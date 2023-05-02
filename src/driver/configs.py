@@ -1,3 +1,4 @@
+from natsort import natsorted
 from pathlib import Path
 import psutil
 import re
@@ -61,6 +62,7 @@ def better_response(r1, r2, track):
         else:
             return r2
 
+
 def is_best_response(response, track):
     if response is None:
         return False
@@ -78,6 +80,7 @@ TIME_BUFFER_FOR_RESPONSE = 55
 TIME_BUFFER_FOR_SOLVERS = 4
 TIME_BUFFER_FOR_TERMINATE = 1
 MEMORY_BUFFER_FOR_DRIVER = 200 * 1024 * 1024
+
 
 class PortfolioConfig(object):
 
@@ -112,6 +115,7 @@ class PortfolioConfig(object):
         psutil.wait_procs(processes, timeout=time_limit - TIME_BUFFER_FOR_RESPONSE, callback=on_process_terminate)
         return best_response
 
+
 def terminate_all(processes):
     for p in processes:
         try:
@@ -124,6 +128,7 @@ def terminate_all(processes):
             p.kill()
         except psutil.NoSuchProcess:
             pass
+
 
 class SingleConfig(object):
     def __init__(self, track, component):
@@ -173,12 +178,12 @@ class PlannerCommand(object):
 
     def parse_reponse(self, process, track):
         # implement in derived classes: parse any plans, select the best one and return a response
-        #raise NotImplementedError()
+        # raise NotImplementedError()
         return None
 
 
-def parse_cheapest_plan(run_dir: Path):
-    for plan_file in run_dir.glob("sas_plan*"):
+def parse_valid_plan_with_highest_id(run_dir: Path):
+    for plan_file in natsorted(run_dir.glob("sas_plan*"), reverse=True):
         with plan_file.open() as f:
             lines = [line.strip() for line in f.readlines()]
             if not lines:
@@ -191,6 +196,14 @@ def parse_cheapest_plan(run_dir: Path):
             assert cost == len(plan)
             return plan
     return None
+
+
+def parse_cheapest_plan(run_dir: Path):
+    return parse_valid_plan_with_highest_id(run_dir)
+
+
+def parse_most_expensive_plan(run_dir: Path):
+    return parse_valid_plan_with_highest_id(run_dir)
 
 
 def parse_scorpion_response(process):
@@ -210,12 +223,38 @@ def parse_scorpion_response(process):
         return None
 
 
+def parse_symk_response(process, track):
+    cost = None
+    best_plan = None
+    shortest_plan = False
+
+    if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
+        return UNSOLVABLE_RESPONSE
+    elif track == SHORTEST_TRACK or track == EXISTENT_TRACK:
+        best_plan = parse_cheapest_plan(Path(process.run_dir))
+        if best_plan is not None:
+            cost = len(best_plan)
+            shortest_plan = True
+    else:
+        best_plan = parse_most_expensive_plan(Path(process.run_dir))
+        if best_plan is not None:
+            cost = len(best_plan)
+            shortest_plan = False
+
+    assert not EXIT_SUCCESS or best_plan is None
+
+    if best_plan is not None:
+        return Response("a YES", cost, is_shortest=shortest_plan, is_longest=not shortest_plan)
+    assert cost == None
+    return None
+
+
 class ScorpionAnytime(PlannerCommand):
     def __init__(self):
         cmd = [SCORPION, "{sas_filename}",
-                "--landmarks", "lmg=lm_hm(use_orders=false, m=1)",
-                "--evaluator", "hlm=lmcount(lmg, admissible=True, pref=false)",
-                "--search", """iterated([
+               "--landmarks", "lmg=lm_hm(use_orders=false, m=1)",
+               "--evaluator", "hlm=lmcount(lmg, admissible=True, pref=false)",
+               "--search", """iterated([
                     eager(single(hlm)),
                     lazy_greedy([hlm]),
                     lazy_wastar([hlm],w=5),
@@ -232,9 +271,9 @@ class ScorpionAnytime(PlannerCommand):
 class ScorpionFirstSolution(PlannerCommand):
     def __init__(self):
         cmd = [SCORPION, "{sas_filename}",
-                "--landmarks", "lmg=lm_hm(use_orders=false, m=1)",
-                "--evaluator", "hlm=lmcount(lmg, admissible=True, pref=false)",
-                "--search", "eager(single(hlm))"]
+               "--landmarks", "lmg=lm_hm(use_orders=false, m=1)",
+               "--evaluator", "hlm=lmcount(lmg, admissible=True, pref=false)",
+               "--search", "eager(single(hlm))"]
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
@@ -247,9 +286,7 @@ class SymKShortSolution(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        # TODO
-        #raise NotImplementedError()
-        return None
+        return parse_symk_response(process, track)
 
 
 class SymKLongSolution(PlannerCommand):
@@ -259,9 +296,7 @@ class SymKLongSolution(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        # TODO
-        #raise NotImplementedError()
-        return None
+        return parse_symk_response(process, track)
 
 
 class MIPPlanner(PlannerCommand):
