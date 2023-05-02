@@ -1,7 +1,26 @@
 container/cplex_studio2211.linux_x86_64.bin
 
 src/scorpion/builds/
+
+# SymK
 src/symk/builds/
+src/symk/__pycache__/
+src/symk/output.sas
+src/symk/sas_plan
+src/symk/sas_plan.*
+src/symk/experiments/issue*/.venv/
+src/symk/experiments/issue*/data/
+src/symk/misc/.tox/
+src/symk/misc/autodoc/downward-xmlrpc.secret
+
+# SymK-CUDD
+src/symk/src/dd_libs/cudd-3.0.0/autom4te.cache/
+src/symk/src/dd_libs/cudd-3.0.0/Makefile.in
+src/symk/src/dd_libs/cudd-3.0.0/aclocal.m4
+src/symk/src/dd_libs/cudd-3.0.0/configure
+src/symk/src/dd_libs/cudd-3.0.0/config.h.in
+src/symk/src/dd_libs/cudd-3.0.0/config.h.in~
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

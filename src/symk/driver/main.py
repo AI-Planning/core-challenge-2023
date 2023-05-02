@@ -10,16 +10,16 @@ from . import cleanup
 from . import run_components
 from . import __version__
 
-TEMP_DIR = tempfile.TemporaryDirectory()
+#TEMP_DIR = tempfile.TemporaryDirectory()
 
 def remove_plan_folder():
-    plan_dir = TEMP_DIR.name # "found_plans"
+    plan_dir = "found_plans" # TEMP_DIR.name #
     if os.path.exists(plan_dir):
         shutil.rmtree(plan_dir)
     os.makedirs(plan_dir)
 
 def main():
-    remove_plan_folder()
+    # remove_plan_folder()
     args = arguments.parse_args()
     logging.basicConfig(level=getattr(logging, args.log_level.upper()),
                         format="%(levelname)-8s %(message)s",
