@@ -238,12 +238,10 @@ def parse_symk_response(process, track):
             cost = len(best_plan)
             shortest_plan = False
 
-    # TODO: This assertion looks wrong. If the planner returns EXIT_SUCCESS, then it should have found a plan.
-    assert not EXIT_SUCCESS or best_plan is None
+    assert not EXIT_SUCCESS or best_plan is not None
 
     if best_plan is not None:
-        # TODO: please add a comment why we can compute is_longest in this way.
-        return Response("a YES", cost, is_shortest=shortest_plan, is_longest=not shortest_plan)
+        return Response("a YES", cost, is_shortest=shortest_plan, is_longest=False)
     assert cost == None
     return None
 
