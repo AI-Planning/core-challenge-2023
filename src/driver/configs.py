@@ -33,8 +33,9 @@ class Response(object):
     def __str__(self):
         return self.plan
 
-
-UNSOLVABLE_RESPONSE = Response("a NO", float("inf"), is_shortest=True, is_longest=True)
+def generate_unsolvable_response(dat_filename: Path):
+    plan_lines = dat_filename.read_text() + "\na NO"
+    return Response(plan_lines, float("inf"), is_shortest=True, is_longest=True)
 
 
 def better_response(r1, r2, track):
@@ -192,11 +193,12 @@ def generate_unsolvable_response(dat_filename: Path):
     return Response(plan_lines, float("inf"), is_shortest=True, is_longest=True)
 
 def parse_valid_plan_with_highest_id(run_dir: Path, dat_filename: Path):
-    instance = dat_filename.read_text().splitlines()
-    assert "s " == instance[0][0:2]
-    assert "t " == instance[1][0:2]
-    init = set(instance[0][2:].split())
-    goal = set(instance[1][2:].split())
+    instance = dat_filename.read_text()
+    instance_lines = instance.splitlines()
+    assert "s " == instance_lines[0][0:2]
+    assert "t " == instance_lines[1][0:2]
+    init = set(instance_lines[0][2:].split())
+    goal = set(instance_lines[1][2:].split())
 
     for plan_file in natsorted(run_dir.glob("sas_plan*"), reverse=True):
         lines = plan_file.read_text().splitlines()
@@ -208,13 +210,13 @@ def parse_valid_plan_with_highest_id(run_dir: Path, dat_filename: Path):
             continue
         plan, cost = decode_plan(actions, init, goal)
         if plan is not None:
-            return plan, cost
+            return instance + plan, cost
     return None, None
 
 
 def parse_scorpion_response(process, track):
     if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
-        return UNSOLVABLE_RESPONSE
+        return generate_unsolvable_response(Path(process.dat_filename))
 
     best_plan, cost = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
     if best_plan is None:
@@ -231,7 +233,7 @@ def parse_symk_response(process, track):
     shortest_plan = False
 
     if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
-        return UNSOLVABLE_RESPONSE
+        return generate_unsolvable_response(Path(process.dat_filename))
     elif track == SHORTEST_TRACK or track == EXISTENT_TRACK:
         best_plan, cost = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
         if best_plan is not None:

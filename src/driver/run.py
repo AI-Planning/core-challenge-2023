@@ -26,7 +26,7 @@ def run_config(config, memory_limit, time_limit, col_filename, dat_filename):
     if response is not None:
         print(response)
     else:
-        print("Response is None!")
+        print("c UNKNOWN")
 
 
 def parse_options():
