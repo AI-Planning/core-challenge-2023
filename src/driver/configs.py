@@ -216,14 +216,13 @@ def parse_scorpion_response(process, track):
     if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
         return UNSOLVABLE_RESPONSE
 
-    best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
+    best_plan, cost = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
     if best_plan is None:
         return None
 
-    cost = len(best_plan)
     with open(f"{process.run_dir}/run.log") as f:
         exhausted_state_space = any("Completely explored state space -- no solution!" in line for line in f)
-    return Response("a YES", cost, is_shortest=exhausted_state_space, is_longest=False)
+    return Response(best_plan, cost, is_shortest=exhausted_state_space, is_longest=False)
 
 
 def parse_symk_response(process, track):
@@ -234,20 +233,18 @@ def parse_symk_response(process, track):
     if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
         return UNSOLVABLE_RESPONSE
     elif track == SHORTEST_TRACK or track == EXISTENT_TRACK:
-        best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
+        best_plan, cost = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
         if best_plan is not None:
-            cost = len(best_plan)
             shortest_plan = True
     else:
-        best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
+        best_plan, cost = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
         if best_plan is not None:
-            cost = len(best_plan)
             shortest_plan = False
 
     assert not EXIT_SUCCESS or best_plan is not None
 
     if best_plan is not None:
-        return Response("a YES", cost, is_shortest=shortest_plan, is_longest=False)
+        return Response(best_plan, cost, is_shortest=shortest_plan, is_longest=False)
     assert cost == None
     return None
 
@@ -268,7 +265,7 @@ class ScorpionAnytime(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        return parse_scorpion_response(process)
+        return parse_scorpion_response(process, track)
 
 
 class ScorpionFirstSolution(PlannerCommand):
@@ -280,7 +277,7 @@ class ScorpionFirstSolution(PlannerCommand):
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
-        return parse_scorpion_response(process)
+        return parse_scorpion_response(process, track)
 
 
 class SymKShortSolution(PlannerCommand):

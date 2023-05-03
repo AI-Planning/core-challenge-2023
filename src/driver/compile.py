@@ -9,6 +9,9 @@ import sys
 def to_var_id(node):
     return int(node) - 1
 
+def to_node_id(var_id):
+    return str(int(var_id) + 1)
+
 
 def parse_col_file(filename):
     with open(filename) as f:
@@ -85,13 +88,13 @@ def decode_plan(actions, initial_state, goal_state):
     # Only works for style split for now
     state = set(initial_state)
     cost = 0
-    lines = ["a yes", answer_line(state)]
+    lines = ["a YES", answer_line(state)]
     for pick_action, place_action in pairs(actions):
-        pick_from = parse_action_parameter(pick_action)
-        place_to = parse_action_parameter(place_action)
+        pick_from = to_node_id(parse_action_parameter(pick_action, "pick"))
+        place_to = to_node_id(parse_action_parameter(place_action, "place"))
         state.remove(pick_from)
         state.add(place_to)
-        lines.add(answer_line(state))
+        lines.append(answer_line(state))
         cost += 1
     if state == set(goal_state):
         return "\n".join(lines), cost
