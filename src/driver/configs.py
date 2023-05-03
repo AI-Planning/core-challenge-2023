@@ -206,21 +206,18 @@ def parse_most_expensive_plan(run_dir: Path):
     return parse_valid_plan_with_highest_id(run_dir)
 
 
-def parse_scorpion_response(process):
-    exhausted_state_space = False
+def parse_scorpion_response(process, track):
+    if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
+        return UNSOLVABLE_RESPONSE
+
+    best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir))
+    if best_plan is None:
+        return None
+
+    cost = len(best_plan)
     with open(f"{process.run_dir}/run.log") as f:
         exhausted_state_space = any("Completely explored state space -- no solution!" in line for line in f)
-
-    if process.returncode == EXIT_SUCCESS:
-        cheapest_plan = parse_cheapest_plan(Path(process.run_dir))
-        assert cheapest_plan is not None
-        cost = len(cheapest_plan)
-        return Response("a YES", cost, is_shortest=exhausted_state_space, is_longest=False)
-    elif process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
-        return UNSOLVABLE_RESPONSE
-    else:
-        # TODO: Do we need to distinguish between other outcomes?
-        return None
+    return Response("a YES", cost, is_shortest=exhausted_state_space, is_longest=False)
 
 
 def parse_symk_response(process, track):
@@ -241,9 +238,11 @@ def parse_symk_response(process, track):
             cost = len(best_plan)
             shortest_plan = False
 
+    # TODO: This assertion looks wrong. If the planner returns EXIT_SUCCESS, then it should have found a plan.
     assert not EXIT_SUCCESS or best_plan is None
 
     if best_plan is not None:
+        # TODO: please add a comment why we can compute is_longest in this way.
         return Response("a YES", cost, is_shortest=shortest_plan, is_longest=not shortest_plan)
     assert cost == None
     return None
