@@ -49,9 +49,14 @@ def main():
     else:
         memory_limit = memory_limit * 1024 * 1024 * 1024 # limit is given in GB, we need it in bytes
 
-    time_limit = args.time_limit
+    time_limit = args.time_limit  
+
     if time_limit is None:
         time_limit, _ = resource.getrlimit(resource.RLIMIT_CPU)
+    elif time_limit <= 60:
+        print(f"Warning: Time limit ({time_limit}s) is lower than our postprocessing time of 60 sec.")
+        exit(1)
+
 
     run_config(config, memory_limit, time_limit, args.col_filename, args.dat_filename)
 

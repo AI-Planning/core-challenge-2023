@@ -41,7 +41,7 @@ jobs:
         run: |
           ${{ github.workspace }}/.github/workflows/run-tests.sh $TIMEOUT ${{ github.repository }}:latest .env ${{ github.workspace }}/container/test-instances results "$EXTRA_ARGS"
         env:
-          TIMEOUT: 30
+          TIMEOUT: 90
           MAX_MEMORY_SIZE: 7
           LAUNCH_OPTIONS: "${{ github.workspace }}/container/launchOptions.csv"
           EXTRA_ARGS: ""
