@@ -4,6 +4,8 @@ import psutil
 import re
 import resource
 
+from compile import decode_plan
+
 SCRIPT_DIR = Path(__file__).parent
 SOLVER_DIR = SCRIPT_DIR.parent
 SCORPION = str(SOLVER_DIR / "scorpion/fast-downward.py")
@@ -28,9 +30,8 @@ class Response(object):
         self.is_shortest = is_shortest
         self.is_longest = is_longest
 
-    def generate_output(self, dat_filename):
-        with open(dat_filename) as f:
-            return f.read() + self.plan
+    def __str__(self):
+        return self.plan
 
 
 UNSOLVABLE_RESPONSE = Response("a NO", float("inf"), is_shortest=True, is_longest=True)
@@ -106,7 +107,12 @@ class PortfolioConfig(object):
             processes.append(process)
 
         def on_process_terminate(process):
-            new_response = process.command.parse_reponse(process, self.track)
+            try:
+                new_response = process.command.parse_reponse(process, self.track)
+            except:
+                # Silently ignore errors in the parsers so they don't kill the other components.
+                # We also do not want to print anything because we should only print the solution.
+                new_response = None
             nonlocal best_response
             best_response = better_response(best_response, new_response, self.track)
             if is_best_response(best_response, self.track):
@@ -178,39 +184,39 @@ class PlannerCommand(object):
 
     def parse_reponse(self, process, track):
         # implement in derived classes: parse any plans, select the best one and return a response
-        # raise NotImplementedError()
         return None
 
 
-def parse_valid_plan_with_highest_id(run_dir: Path):
+def generate_unsolvable_response(dat_filename: Path):
+    plan_lines = dat_filename.read_text() + "\na NO"
+    return Response(plan_lines, float("inf"), is_shortest=True, is_longest=True)
+
+def parse_valid_plan_with_highest_id(run_dir: Path, dat_filename: Path):
+    instance = dat_filename.read_text().splitlines()
+    assert "s " == instance[0][0:2]
+    assert "t " == instance[1][0:2]
+    init = set(instance[0][2:].split())
+    goal = set(instance[1][2:].split())
+
     for plan_file in natsorted(run_dir.glob("sas_plan*"), reverse=True):
-        with plan_file.open() as f:
-            lines = [line.strip() for line in f.readlines()]
-            if not lines:
-                continue
-            *plan, cost_line = lines
-            match = re.match(r"; cost = (\d+) \(unit cost\)", cost_line)
-            if not match:
-                continue
-            cost = int(match[1])
-            assert cost == len(plan)
-            return plan
-    return None
-
-
-def parse_cheapest_plan(run_dir: Path):
-    return parse_valid_plan_with_highest_id(run_dir)
-
-
-def parse_most_expensive_plan(run_dir: Path):
-    return parse_valid_plan_with_highest_id(run_dir)
+        lines = plan_file.read_text().splitlines()
+        if not lines:
+            continue
+        *actions, cost_line = lines
+        match = re.match(r"; cost = (\d+) \(unit cost\)", cost_line)
+        if not match:
+            continue
+        plan, cost = decode_plan(actions, init, goal)
+        if plan is not None:
+            return plan, cost
+    return None, None
 
 
 def parse_scorpion_response(process, track):
     if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
         return UNSOLVABLE_RESPONSE
 
-    best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir))
+    best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
     if best_plan is None:
         return None
 
@@ -228,12 +234,12 @@ def parse_symk_response(process, track):
     if process.returncode == EXIT_SEARCH_UNSOLVED_INCOMPLETE:
         return UNSOLVABLE_RESPONSE
     elif track == SHORTEST_TRACK or track == EXISTENT_TRACK:
-        best_plan = parse_cheapest_plan(Path(process.run_dir))
+        best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
         if best_plan is not None:
             cost = len(best_plan)
             shortest_plan = True
     else:
-        best_plan = parse_most_expensive_plan(Path(process.run_dir))
+        best_plan = parse_valid_plan_with_highest_id(Path(process.run_dir), Path(process.dat_filename))
         if best_plan is not None:
             cost = len(best_plan)
             shortest_plan = False
@@ -303,7 +309,7 @@ class MIPPlanner(PlannerCommand):
 
     def parse_reponse(self, process, track):
         if process.returncode == 10:
-            return Response("a NO", float("inf"), is_shortest=True, is_longest=True)
+            return generate_unsolvable_response(Path(process.dat_filename))
         else:
             return None
 

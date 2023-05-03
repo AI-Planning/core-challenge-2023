@@ -24,7 +24,7 @@ def run_config(config, memory_limit, time_limit, col_filename, dat_filename):
     response = config.run(run_dir, memory_limit, time_limit, col_filename, dat_filename, sas_filename)
     # Either print output to stdout or write to file, we don't know.
     if response is not None:
-        print(response.generate_output(dat_filename))
+        print(response)
     else:
         print("Response is None!")
 
