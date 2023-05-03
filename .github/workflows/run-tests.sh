@@ -48,7 +48,7 @@ do
         params=$(echo "$params" | sed "s|COLFILE|$COLFILE|g")
         params=$(echo "$params" | sed "s|DATFILE|$DATFILE|g")
 
-        timeout 30 \
+        timeout $TIMEOUT \
             docker run --rm -t -v $testdir:/tests --env-file $env $img $extra $params &> $resultdir/${config}-${t}-result.txt \
             ; echo $? > $resultdir/${t}-code
         code=$(cat $resultdir/${t}-code)
