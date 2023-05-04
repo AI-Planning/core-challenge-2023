@@ -64,6 +64,15 @@ do
                 echo "${t}: validation failed"
                 echo "| ${t} | :no_entry: |" >> $resultdir/${config}.md
                 ((vfailed++))
+
+                echo "Log"
+                echo "============"
+                cat $resultdir/${config}-${t}-result.txt
+                echo "============"
+                echo "Validator Log"
+                echo "============"
+                cat $resultdir/${config}-${t}-validator-result.txt
+                echo "============"
             fi
         elif [ "$code" -eq 124 ]; then
             echo "${t}: timeout"
@@ -73,6 +82,11 @@ do
             echo "${t}: execution failed"
             echo "| ${t} | :collision: |" >> $resultdir/${config}.md
             ((efailed++))
+
+            echo "Log"
+            echo "============"
+            cat $resultdir/${config}-${t}-result.txt
+            echo "============"
         fi
     done
 
