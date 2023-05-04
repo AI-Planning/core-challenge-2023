@@ -82,7 +82,7 @@ def parse_action_parameter(action, expected_name):
 
 
 def answer_line(tokenization):
-    return 'a ' + ' '.join(sorted(tokenization))
+    return 'a ' + ' '.join(str(i) for i  in sorted(int(t) for t in tokenization))
 
 def decode_plan(actions, initial_state, goal_state):
     # Only works for style split for now
