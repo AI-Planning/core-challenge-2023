@@ -30,7 +30,6 @@ do
         continue
     fi
     config=$(echo "$line" | cut -d',' -f1)
-    params=$(echo "$line" | cut -d',' -f2-)
 
     ntests=${#tests[@]}
     tfailed=0
@@ -43,17 +42,19 @@ do
         DATFILE=/tests/${t}_01.dat
 
         # Replace placeholders in parameters
-        params=$(echo "$params" | sed "s|TIMEOUT|$TIMEOUT|g")
+        params=$(echo "$line" | cut -d',' -f2-)
+        params=$(echo "$params" | sed "s|TIMELIMIT|$TIMELIMIT|g")
         params=$(echo "$params" | sed "s|MAX_MEMORY_SIZE|$MAX_MEMORY_SIZE|g")
         params=$(echo "$params" | sed "s|COLFILE|$COLFILE|g")
         params=$(echo "$params" | sed "s|DATFILE|$DATFILE|g")
+        IFS=',' read -ra params_array <<< "$params"
 
-        timeout $TIMEOUT \
-            docker run --rm -t -v $testdir:/tests --env-file $env $img $extra $params &> $resultdir/${config}-${t}-result.txt \
+        timeout $TIMELIMIT \
+            docker run --rm -t -v $testdir:/tests --env-file $env $img $extra "${params_array[@]}" &> $resultdir/${config}-${t}-result.txt \
             ; echo $? > $resultdir/${t}-code
         code=$(cat $resultdir/${t}-code)
         if [ "$code" -eq 0 ]; then
-            python3 validator.py $testdir/${t}.col $testdir/${t}_01.dat $resultdir/${t}-result.txt &> $resultdir/${config}-${t}-validator-result.txt \
+            python3 validator.py $testdir/${t}.col $testdir/${t}_01.dat $resultdir/${config}-${t}-result.txt &> $resultdir/${config}-${t}-validator-result.txt \
                 ; echo $? > $resultdir/${t}-validator-code
             vcode=$(cat $resultdir/${t}-validator-code)
             if [ "$vcode" -eq 0 ]; then
