@@ -1,5 +1,11 @@
 container/cplex_studio2211.linux_x86_64.bin
 
+# abstract
+description/main.aux
+description/main.out
+description/main.pdf
+
+# Scorpion
 src/scorpion/builds/
 
 # SymK

@@ -3,17 +3,151 @@
 
 \title{Solver name}
 
-\author[1]{Author Name1}
-\author[1,2]{Author Name2}
+\usepackage{amsmath}
+\usepackage{authblk}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{natbib}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
 
-\affil[1]{Affiliation1}
-\affil[2]{Affiliation2}
+\usepackage{todonotes}
+\presetkeys{todonotes}{inline,caption={}}{}
+
+\date{}
+\title{PARIS 2023: Planning Algorithms for \\ Reconfiguring Independent Sets}
+
+\author[1]{Bruce Chidley}
+\author[2]{Remo Christen}
+\author[2]{Salomé Eriksson}
+\author[3]{\\Michael Katz}
+\author[1]{Christian Muise}
+\author[1]{Alice Petrov}
+\author[2]{\\Florian Pommerening}
+\author[4]{Jendrik Seipp}
+\author[2]{Silvan Sievers}
+\author[4]{\\David Speck}
+
+\affil[1]{Queen's University}
+\affil[2]{University of Basel}
+\affil[3]{IBM T.J. Watson Research Center}
+\affil[4]{Linköping University}
+
 
 \begin{document}
 \maketitle
 
-\section{Description}
-Here is a description of your solver.
+\section{Introduction}
+
+\todo{\begin{itemize}
+    \item This is the description of our entry to the ISR competition
+    \item The solver is a modified version of our submission to the 2022 competition (cite)
+    \item Compared to 2022, we adapted our solver to adapt to given resource limits and respond with the best answer it can find within those limits
+    \item We also use anytime search methods now, instead of responding with the first solution found. This can produce better solutions but requires careful handling of the limits to resonpd with an answer in time.
+    \item In the following, we describe the components of our planner and how we combine them for the different tracks.
+\end{itemize}}
+
+\section{Components}
+
+\todo{\begin{itemize}
+    \item In portfolio tracks, we use three main planners, one specialized to find short plans, one specialized to find long plans, and one specialized to prve unsolvability.
+    \item In the single solver configurations, we pick one of the planners for each track.
+    \item In this section, we first describe each component separately, then discuss how they are combined in the next section.
+    \item The first two components are classical planners and we transform the given col/dat files to planning task inputs in the same way we did in 2022.
+\end{itemize}}
+
+\subsection{Using Landmarks to Find Short Plans}
+\todo{\begin{itemize}
+    \item As in 2022, we run a greedy best-first search (GBFS)
+    \cite{doran-michie-rsl1966} with a \emph{landmark count} heuristic
+    \cite{keyder-et-al-ecai2010} that computes all landmarks of the
+    \emph{delete-relaxed} task \cite{bonet-geffner-aij2001} ($h^1$ landmarks). The
+    landmark costs are combined with \emph{uniform cost partitioning}
+    \cite{katz-domshlak-icaps2008b}.
+    \item In addition to this configuration that also run in 2022, we consider
+    an anytime version that does not stop after finding the first solution but
+    instead continues to search for shorter and shorter plans. The configuration
+    runs weighted $\textup{A}^*$ with decreasing weights, starting with GBFS
+    (which is equivalent to using an infinitely large weight), then using
+    weights of 5, 3, 2 and 1 (which is equivalent to running $\textup{A}^*$).
+    \item This anytime configuation will continually find shorter and shorter plans.
+\end{itemize}}
+
+
+\subsection{Using Symbolic Top-$k$ Search to Find Long Plans}
+\todo{\begin{itemize}
+    \item As in 2022, We run a modified forward symbolic blind search \cite{torralba-et-al-aij2017,speck-et-al-icaps2020} based on an algorithm 
+    called SymK-LL \cite{vontschammer-et-al-icaps2022}, implemented in the symbolic 
+    planner SymK \cite{speck-et-al-aaai2020}, which iteratively finds and generates 
+    all loopless plans of a given task.
+    \item This configuration of SymK finds increasingly longer loopless plans, starting with the shortest plan. It can be seen as an anytime configuration
+    like our landmark component, but it starts from the shortest plan and approaches the longest loopless plan whereas the landmark configuraiton starts with a suboptimal plan and approaches the shortest plan.
+    \item In addition to this anytime configuration, we also use an optimal configuration that stops after the first solution.
+\end{itemize}}
+
+
+\subsection{Detecting Unsolvability with Counter Abstractions}
+\todo{\begin{itemize}
+    \item As in 2022, we use abstractions based on counting how many tokens are
+        on nodes with a particular color (in some coloring of of the graph). An
+        abstract state is given by a count specifying for each color how many tokens are on nodes with that
+        color. We use a MIP solver to test whether an independent set is
+        possible for a given abstract state. If it is not, we can prune the
+        abstract state. Using this pruning, we fully explore the abstract state
+        space of the counter-abstraction \cite{TODO}. If no abstract goal state is
+        reachable, we have a proof that the instance is unsolvable.
+    \item We refer to the 2022 for a longer description of this component.
+    \item Since the component uses CPLEX \cite{TODO} and we cannot publish it
+    for licensing reasons, we implemented a fall back solution using SCIP
+    \cite{TODO} for it. Our container can be built with CPLEX support if an
+    CPLEX installer is available during build time.
+
+\end{itemize}}
+
+
+\section{Configurations}
+
+\todo{\begin{itemize}
+    \item For all our configurations, we reserve 60 seconds at the end to report
+    the best solution found and 200 MB of memory for the Python driver script
+    starting the solvers.
+    \item Reserving time to pick the best solution is necessary even for single solver tracks, as we run anytime solvers that continually find better and better solutions.
+    \item In portfolio configurations, we devide the available memory equally among all components and let them all run for the full time.
+    \item If a component finishes, we decide based on its result if it is necessary to keep the other components running.
+    \item Our two planner components (SymK and the one based on Landmarks) are single-core applications, while the counter abstraction component uses a MIP solver that can use multiple cores.
+    We do not explicitly enforce this but if we start all of them in parallel, the operating system will schedule the two planners to run on one core each and the MIP solver to use the remaining available cores.
+\end{itemize}}
+
+\subsection{Shortest Track}
+
+\todo{\begin{itemize}
+    \item For the single solver configuration, we only run the anytime version of the Landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan.
+    \item For the portfolio configuration, we additionally run the optimal configuration of SymK, and the counter abstraction component.
+    \item If the counter abstractions show that the instance is unsolvable, we terminate the other components.
+    \item If SymK terminates in this configuration, it means the plan it found is optimal. in this case, we also terminate the other components.
+    \item If the anytime search runs to completion, we also know that the last plan it found was optimal and we can terminate the other components.
+    \item If none of these cases occur, we run until the time limit and report the best solution found until then.
+\end{itemize}}
+
+
+\subsection{Existent Track}
+\todo{\begin{itemize}
+    \item Our configuration here is almost the same as in the shortest track. The difference is that we terminate all components as soon as any component finds the first solution (or we prove unsolvability).
+    \item This means we replace the anytime configuration with one that only runs until it finds the first solution.
+    \item The single solver configuration just runs this configuration of the landmark-based planner, and the portfolio configuration also runs the optimal configuration of SymK, and the MIP solver.
+\end{itemize}}
+
+\subsection{Longest Track}
+\todo{\begin{itemize}
+    \item In the single solver configuration, we run the anytime configuration of SymK that keeps finding longer and longer plans. Once we reach the resource limits, we report the longest solution found.
+    \item In the portfolio configuration, we also run the landmark-based planner in parallel.
+    \item We do not use its anytime configuration here because it would find shorter and shorter plans, so the first plan it finds is the longest one it can find. 
+    \item The landmark planner is generally optimized for finding short solutions, but in case SymK does not find any solution, or does not find long solutions fast enough, a solution by this component could still be better.
+\end{itemize}}
+
+\section{Graph Track}
+
+\todo{TODO}
 
 \end{document}
 
