@@ -39,7 +39,7 @@ jobs:
           MEM_LIMIT_GB: 7 # memory limit for Github hosted runner
       - name: Run test suite
         run: |
-          ${{ github.workspace }}/.github/workflows/run-tests.sh $TIMELIMIT ${{ github.repository }}:latest .env ${{ github.workspace }}/container/test-instances results "$EXTRA_ARGS"
+          ${{ github.workspace }}/.github/workflows/run-tests.sh $TIMELIMIT ${{ steps.imagename.outputs.lowercase }}:latest .env ${{ github.workspace }}/container/test-instances results "$EXTRA_ARGS"
         env:
           TIMELIMIT: 90
           MAX_MEMORY_SIZE: 7
