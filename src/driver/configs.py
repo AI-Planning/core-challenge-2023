@@ -320,7 +320,6 @@ CONFIGS = {
     "shortest-portfolio": PortfolioConfig(SHORTEST_TRACK, [
         ScorpionAnytime(),
         SymKShortSolution(),
-        MIPPlanner(),
     ]),
     "existent-single": SingleConfig(EXISTENT_TRACK,
         ScorpionFirstSolution()
