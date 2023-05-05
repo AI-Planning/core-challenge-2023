@@ -261,7 +261,7 @@ class ScorpionAnytime(PlannerCommand):
                     eager_wastar([hlm],w=5),
                     eager_wastar([hlm],w=3),
                     eager_wastar([hlm],w=2),
-                    astar(h)
+                    astar(hlm)
                     ],repeat_last=false,continue_on_fail=false)"""]
         super().__init__(cmd)
 
