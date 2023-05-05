@@ -1,0 +1,74 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Achterberg(2009)]{scip}
+T.~Achterberg.
+\newblock Scip: solving constraint integer programs.
+\newblock \emph{Mathematical Programming Computation}, 1\penalty0 (1):\penalty0
+  1--41, Jul 2009.
+\newblock ISSN 1867-2957.
+\newblock \doi{10.1007/s12532-008-0001-1}.
+\newblock URL \url{https://doi.org/10.1007/s12532-008-0001-1}.
+
+\bibitem[Bonet and Geffner(2001)]{bonet-geffner-aij2001}
+B.~Bonet and H.~Geffner.
+\newblock Planning as heuristic search.
+\newblock \emph{AIJ}, 129\penalty0 (1):\penalty0 5--33, 2001.
+
+\bibitem[Cplex(2009)]{cplex}
+I.~I. Cplex.
+\newblock V12. 1: User’s manual for cplex.
+\newblock \emph{International Business Machines Corporation}, 46\penalty0
+  (53):\penalty0 157, 2009.
+
+\bibitem[Doran and Michie(1966)]{doran-michie-rsl1966}
+J.~E. Doran and D.~Michie.
+\newblock Experiments with the graph traverser program.
+\newblock \emph{Proceedings of the Royal Society A}, 294:\penalty0 235--259,
+  1966.
+
+\bibitem[Katz and Domshlak(2008)]{katz-domshlak-icaps2008b}
+M.~Katz and C.~Domshlak.
+\newblock Structural patterns heuristics via fork decomposition.
+\newblock In \emph{Proc.\ ICAPS 2008}, pages 182--189, 2008.
+
+\bibitem[Keyder et~al.(2010)Keyder, Richter, and
+  Helmert]{keyder-et-al-ecai2010}
+E.~Keyder, S.~Richter, and M.~Helmert.
+\newblock Sound and complete landmarks for and/or graphs.
+\newblock In \emph{Proc.\ ECAI 2010}, pages 335--340, 2010.
+
+\bibitem[Soh et~al.(2022)Soh, Okamoto, and Ito]{soh2022core}
+T.~Soh, Y.~Okamoto, and T.~Ito.
+\newblock Core challenge 2022: Solver and graph descriptions, 2022.
+
+\bibitem[Speck et~al.(2020{\natexlab{a}})Speck, Gei{\ss}er, and
+  Mattm{\"u}ller]{speck-et-al-icaps2020}
+D.~Speck, F.~Gei{\ss}er, and R.~Mattm{\"u}ller.
+\newblock When perfect is not good enough: On the search behaviour of symbolic
+  heuristic search.
+\newblock In \emph{Proc.\ ICAPS 2020}, pages 263--271, 2020{\natexlab{a}}.
+
+\bibitem[Speck et~al.(2020{\natexlab{b}})Speck, Mattm{\"u}ller, and
+  Nebel]{speck-et-al-aaai2020}
+D.~Speck, R.~Mattm{\"u}ller, and B.~Nebel.
+\newblock Symbolic top-k planning.
+\newblock In \emph{Proc.\ {AAAI} 2020}, pages 9967--9974, 2020{\natexlab{b}}.
+
+\bibitem[Torralba et~al.(2017)Torralba, Alc\'{a}zar, Kissmann, and
+  Edelkamp]{torralba-et-al-aij2017}
+{\'A}.~Torralba, V.~Alc\'{a}zar, P.~Kissmann, and S.~Edelkamp.
+\newblock Efficient symbolic search for cost-optimal planning.
+\newblock \emph{AIJ}, 242:\penalty0 52--79, 2017.
+
+\bibitem[{von Tschammer} et~al.(2022){von Tschammer}, Mattm{\"u}ller, and
+  Speck]{vontschammer-et-al-icaps2022}
+J.~{von Tschammer}, R.~Mattm{\"u}ller, and D.~Speck.
+\newblock Loopless top-k planning.
+\newblock In \emph{Proc.\ ICAPS 2022}, pages 380--384, 2022.
+
+\end{thebibliography}

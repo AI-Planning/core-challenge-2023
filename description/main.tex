@@ -13,8 +13,7 @@
 
 \usepackage{todonotes}
 \presetkeys{todonotes}{inline,caption={}}{}
-
-\renewcommand{\cite}[1]{}
+\renewcommand{\todo}[1]{} % uncomment to hide all todos
 
 \date{}
 \title{PARIS 2023: Planning Algorithms for \\ Reconfiguring Independent Sets}
@@ -99,7 +98,7 @@ As in 2022, we run a modified forward symbolic blind search \cite{torralba-et-al
 
 \subsection{Detecting Unsolvability with Counter Abstractions}
 
-Again, as in 2022, we use abstractions based on counting how many tokens are on nodes with a particular color (in some coloring of of the graph). An abstract state is given by a count specifying for each color how many tokens are on nodes with that color. We use a MIP solver to test whether an independent set is possible for a given abstract state. If it is not, we can prune the abstract state. Using this pruning, we fully explore the abstract state space of the counter-abstraction \cite{TODO}. If no abstract goal state is reachable, we have a proof that the instance is unsolvable. We refer to the 2022 for a longer description of this component. Since the component uses CPLEX \cite{cplex} and we cannot publish it for licensing reasons, we implemented a fall back solution using SCIP \cite{scip} for it. Our container can be built with CPLEX support if a CPLEX installer is available.
+Again, as in 2022, we use abstractions based on counting how many tokens are on nodes with a particular color (in some coloring of of the graph). An abstract state is given by a count specifying for each color how many tokens are on nodes with that color. We use a MIP solver to test whether an independent set is possible for a given abstract state. If it is not, we can prune the abstract state. Using this pruning, we fully explore the abstract state space of the counter-abstraction. If no abstract goal state is reachable, we have a proof that the instance is unsolvable. We refer to the 2022 for a longer description of this component. Since the component uses CPLEX \cite{cplex} and we cannot publish it for licensing reasons, we implemented a fall back solution using SCIP \cite{scip} for it. Our container can be built with CPLEX support if a CPLEX installer is available.
 
 \todo{\begin{itemize}
     \item As in 2022, we use abstractions based on counting how many tokens are
@@ -108,7 +107,7 @@ Again, as in 2022, we use abstractions based on counting how many tokens are on 
         color. We use a MIP solver to test whether an independent set is
         possible for a given abstract state. If it is not, we can prune the
         abstract state. Using this pruning, we fully explore the abstract state
-        space of the counter-abstraction \cite{TODO}. If no abstract goal state is
+        space of the counter-abstraction. If no abstract goal state is
         reachable, we have a proof that the instance is unsolvable.
     \item We refer to the 2022 for a longer description of this component.
     \item Since the component uses CPLEX \cite{cplex} and we cannot publish it
@@ -170,6 +169,7 @@ In the single solver configuration, we run the anytime configuration of SymK tha
 \end{itemize}}
 
 
+\bibliographystyle{abbrvnat}
 \bibliography{abbrv-short,literatur,crossref-short,local}
 
 \end{document}
