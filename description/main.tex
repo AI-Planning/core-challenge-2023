@@ -62,7 +62,7 @@ Throughout the portfolio tracks, we use three core planners: (1) a planner speci
 \subsection{Using Landmarks to Find Short Plans}
 
 Similar to the 2022 entry, we run a greedy best-first search (GBFS) \cite{doran-michie-rsl1966} with a \emph{landmark count} heuristic \cite{keyder-et-al-ecai2010} that computes all landmarks of the \emph{delete-relaxed} task \cite{bonet-geffner-aij2001} ($h^1$ landmarks). The landmark costs are combined with \emph{uniform cost partitioning} \cite{katz-domshlak-icaps2008b}. In addition to this configuration that also ran in 2022, we consider an anytime version that does not stop after finding the first solution but instead continues to search for shorter and shorter plans. The configuration runs weighted $\textup{A}^*$ with decreasing weights, starting with GBFS (which is equivalent to using an infinitely large weight), then using
-weights of 5, 3, 2 and 1 (which is equivalent to running $\textup{A}^*$). This anytime configuation will continually find shorter and shorter plans as long as the time allows.
+weights of 5, 3, 2 and 1 (which is equivalent to running $\textup{A}^*$). This anytime configuration will continually find shorter and shorter plans as long as the time allows.
 
 \todo{\begin{itemize}
     \item As in 2022, we run a greedy best-first search (GBFS)
@@ -83,7 +83,7 @@ weights of 5, 3, 2 and 1 (which is equivalent to running $\textup{A}^*$). This a
 
 \subsection{Using Symbolic Top-$k$ Search to Find Long Plans}
 
-As in 2022, we run a modified forward symbolic blind search \cite{torralba-et-al-aij2017,speck-et-al-icaps2020} based on an algorithm called SymK-LL \cite{vontschammer-et-al-icaps2022}, implemented in the symbolic planner SymK \cite{speck-et-al-aaai2020}, which iteratively finds and generates all loopless plans of a given task. This configuration of SymK finds increasingly longer loopless plans, starting with the shortest plan. It can be seen as an anytime configuration like our landmark component, but it starts from the shortest plan and approaches the longest loopless plan whereas the landmark configuraiton starts with a suboptimal plan and approaches the shortest plan. In addition to this anytime configuration, we also use an optimal configuration that stops after the first solution is found.
+As in 2022, we run a modified forward symbolic blind search \cite{torralba-et-al-aij2017,speck-et-al-icaps2020} based on an algorithm called SymK-LL \cite{vontschammer-et-al-icaps2022}, implemented in the symbolic planner SymK \cite{speck-et-al-aaai2020}, which iteratively finds and generates all loopless plans of a given task. This configuration of SymK finds increasingly longer loopless plans, starting with the shortest plan. It can be seen as an anytime configuration like our landmark component, but it starts from the shortest plan and approaches the longest loopless plan whereas the landmark configuration starts with a suboptimal plan and approaches the shortest plan. In addition to this anytime configuration, we also use an optimal configuration that stops after the first solution is found.
 
 \todo{\begin{itemize}
     \item As in 2022, We run a modified forward symbolic blind search \cite{torralba-et-al-aij2017,speck-et-al-icaps2020} based on an algorithm
@@ -91,7 +91,7 @@ As in 2022, we run a modified forward symbolic blind search \cite{torralba-et-al
     planner SymK \cite{speck-et-al-aaai2020}, which iteratively finds and generates
     all loopless plans of a given task.
     \item This configuration of SymK finds increasingly longer loopless plans, starting with the shortest plan. It can be seen as an anytime configuration
-    like our landmark component, but it starts from the shortest plan and approaches the longest loopless plan whereas the landmark configuraiton starts with a suboptimal plan and approaches the shortest plan.
+    like our landmark component, but it starts from the shortest plan and approaches the longest loopless plan whereas the landmark configuration starts with a suboptimal plan and approaches the shortest plan.
     \item In addition to this anytime configuration, we also use an optimal configuration that stops after the first solution.
 \end{itemize}}
 
@@ -120,7 +120,7 @@ Again, as in 2022, we use abstractions based on counting how many tokens are on 
 
 \section{Configurations}
 
-For all our configurations, we reserve 60 seconds at the end to report the best solution found and 200 MB of memory for the Python driver script starting the solvers. This is necessary to orchestrate the multiple simultaneous threads being used to find a solution. Reserving time to pick the best solution is necessary even for single solver tracks, as we run anytime solvers that continually find better and better solutions. In portfolio configurations, we divide the available memory equally among all components and let them all run for the full time. If a component finishes, we decide based on its result if it is necessary to keep the other components running. Our two planner components (SymK and the one based on Landmarks) are single-core applications, while the counter abstraction component uses a MIP solver that can use multiple cores. We do not explicitly enforce this but if we start all of them in parallel, the operating system will schedule the two planners to run on one core each and the MIP solver to use the remaining available cores.
+For all our configurations, we reserve 60 seconds at the end to report the best solution found and 200 MB of memory for the Python driver script starting the solvers. This is necessary to orchestrate the multiple simultaneous threads being used to find a solution. Reserving time to pick the best solution is necessary even for single solver tracks, as we run anytime solvers that continually find better and better solutions. In portfolio configurations, we divide the available memory equally among all components and let them all run for the full time. If a component finishes, we decide based on its result if it is necessary to keep the other components running. Our two planner components (SymK and the one based on landmarks) are single-core applications, while the counter abstraction component uses a MIP solver that can use multiple cores. We do not explicitly enforce this but if we start all of them in parallel, the operating system will schedule the two planners to run on one core each and the MIP solver to use the remaining available cores.
 
 \todo{\begin{itemize}
     \item For all our configurations, we reserve 60 seconds at the end to report
@@ -129,16 +129,16 @@ For all our configurations, we reserve 60 seconds at the end to report the best 
     \item Reserving time to pick the best solution is necessary even for single solver tracks, as we run anytime solvers that continually find better and better solutions.
     \item In portfolio configurations, we devide the available memory equally among all components and let them all run for the full time.
     \item If a component finishes, we decide based on its result if it is necessary to keep the other components running.
-    \item Our two planner components (SymK and the one based on Landmarks) are single-core applications, while the counter abstraction component uses a MIP solver that can use multiple cores.
+    \item Our two planner components (SymK and the one based on landmarks) are single-core applications, while the counter abstraction component uses a MIP solver that can use multiple cores.
     We do not explicitly enforce this but if we start all of them in parallel, the operating system will schedule the two planners to run on one core each and the MIP solver to use the remaining available cores.
 \end{itemize}}
 
 \subsection{Shortest Track}
 
-For the single solver configuration, we only run the anytime version of the Landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan. For the portfolio configuration, we additionally run the optimal configuration of SymK. We do not run the counter abstraction component, since no points are granted for identifying unsolvable instances. If SymK terminates in this configuration, it means the plan it found is optimal. In this case, we terminate the other component. If the anytime search runs to completion, we also know that the last plan it found was optimal and we can terminate SymK. If none of these cases occur, we run until the time limit and report the best solution found up until that point.
+For the single solver configuration, we only run the anytime version of the landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan. For the portfolio configuration, we additionally run the optimal configuration of SymK. We do not run the counter abstraction component, since no points are granted for identifying unsolvable instances. If SymK terminates in this configuration, it means the plan it found is optimal. In this case, we terminate the other component. If the anytime search runs to completion, we also know that the last plan it found was optimal and we can terminate SymK. If none of these cases occur, we run until the time limit and report the best solution found up until that point.
 
 \todo{\begin{itemize}
-    \item For the single solver configuration, we only run the anytime version of the Landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan.
+    \item For the single solver configuration, we only run the anytime version of the landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan.
     \item For the portfolio configuration, we additionally run the optimal configuration of SymK, and the counter abstraction component.
     \item If the counter abstractions show that the instance is unsolvable, we terminate the other components.
     \item If SymK terminates in this configuration, it means the plan it found is optimal. in this case, we also terminate the other components.
