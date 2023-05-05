@@ -41,6 +41,8 @@ RUN if [ -f "$CPLEX_INSTALLER" ]; then \
         echo "No CPLEX"; \ 
     fi
 
+# Prevent Docker from caching the cloned repo if it changes (https://stackoverflow.com/a/39278224)
+ADD https://api.github.com/repos/AI-Planning/core-challenge-2023/git/refs/heads/main version.json
 RUN git clone --depth 1 https://github.com/AI-Planning/core-challenge-2023.git /core-challenge-2023
 
 # Build SCIP.
