@@ -2,7 +2,9 @@
 
 import argparse
 from pathlib import Path
+import psutil
 import resource
+import signal
 import tempfile
 
 from configs import CONFIGS
@@ -38,8 +40,18 @@ def parse_options():
     parser.add_argument("dat_filename", type=absolute_path)
     return parser.parse_args()
 
+def register_signal_handlers():
+    signal.signal(signal.SIGTERM, forward_signal_to_children)
+    signal.signal(signal.SIGINT, forward_signal_to_children)
+    signal.signal(signal.SIGXCPU, forward_signal_to_children)
+
+def forward_signal_to_children(s, _):
+    current_process = psutil.Process()
+    for child in current_process.children(recursive=False):
+        child.send_signal(s)
 
 def main():
+    register_signal_handlers()
     args = parse_options()
     config = CONFIGS[args.config]
 
