@@ -14,6 +14,8 @@
 \usepackage{todonotes}
 \presetkeys{todonotes}{inline,caption={}}{}
 
+\renewcommand{\cite}[1]{}
+
 \date{}
 \title{PARIS 2023: Planning Algorithms for \\ Reconfiguring Independent Sets}
 
@@ -37,7 +39,7 @@
 
 \section{Introduction}
 
-In this report, we briefly describe our entry to the 2023 ISR competition: Planning Algorithms for Reconfiguring Independent Sets (PARIS 2023). Our solver is a modified version of the 2022 competition submission, which performed extremely well across several of the tracks \cite{paris2022}. We have adapted the solver given the newly imposed resource limits and implemented a mechanism for the portfolio approach to return the best solution found during the resource limits. We additionally employ a suite of anytime search methods, which may produce better solutions. Careful handling of the time-limits was required to ensure that the solver responds with an answer in time. In the following, we describe the components of our planner and how we combine them for the different tracks.
+In this report, we briefly describe our entry to the 2023 ISR competition: Planning Algorithms for Reconfiguring Independent Sets (PARIS 2023). Our solver is a modified version of the 2022 competition submission, which performed extremely well across several of the tracks \cite{soh2022core}. We have adapted the solver given the newly imposed resource limits and implemented a mechanism for the portfolio approach to return the best solution found during the resource limits. We additionally employ a suite of anytime search methods, which may produce better solutions. Careful handling of the time-limits was required to ensure that the solver responds with an answer in time. In the following, we describe the components of our planner and how we combine them for the different tracks.
 
 \todo{\begin{itemize}
     \item This is the description of our entry to the ISR competition
