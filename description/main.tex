@@ -62,7 +62,7 @@ Throughout the portfolio tracks, we use three core planners: (1) a planner speci
 \subsection{Using Landmarks to Find Short Plans}
 
 Similar to the 2022 entry, we run a greedy best-first search (GBFS) \cite{doran-michie-rsl1966} with a \emph{landmark count} heuristic \cite{keyder-et-al-ecai2010} that computes all landmarks of the \emph{delete-relaxed} task \cite{bonet-geffner-aij2001} ($h^1$ landmarks). The landmark costs are combined with \emph{uniform cost partitioning} \cite{katz-domshlak-icaps2008b}. In addition to this configuration that also ran in 2022, we consider an anytime version that does not stop after finding the first solution but instead continues to search for shorter and shorter plans. The configuration runs weighted $\textup{A}^*$ with decreasing weights, starting with GBFS (which is equivalent to using an infinitely large weight), then using
-weights of 5, 3, 2 and 1 (which is equivalent to running $\textup{A}^*$). This anytime configuration will continually find shorter and shorter plans as long as the time allows.
+weights of 5, 3, 2 and 1 (the last of which is equivalent to running $\textup{A}^*$). This anytime configuration will continually find shorter and shorter plans as long as the time allows.
 
 \todo{\begin{itemize}
     \item As in 2022, we run a greedy best-first search (GBFS)
