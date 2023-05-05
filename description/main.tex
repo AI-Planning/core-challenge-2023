@@ -135,7 +135,7 @@ For all our configurations, we reserve 60 seconds at the end to report the best 
 
 \subsection{Shortest Track}
 
-For the single solver configuration, we only run the anytime version of the Landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan. For the portfolio configuration, we additionally run the optimal configuration of SymK, and the counter abstraction component. If the counter abstractions show that the instance is unsolvable, we terminate the other components. If SymK terminates in this configuration, it means the plan it found is optimal. In this case, we also terminate the other components. If the anytime search runs to completion, we also know that the last plan it found was optimal and we can terminate the other components. If none of these cases occur, we run until the time limit and report the best solution found up until that point.
+For the single solver configuration, we only run the anytime version of the Landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan. For the portfolio configuration, we additionally run the optimal configuration of SymK. We do not run the counter abstraction component, since no points are granted for identifying unsolvable instances. If SymK terminates in this configuration, it means the plan it found is optimal. In this case, we terminate the other component. If the anytime search runs to completion, we also know that the last plan it found was optimal and we can terminate SymK. If none of these cases occur, we run until the time limit and report the best solution found up until that point.
 
 \todo{\begin{itemize}
     \item For the single solver configuration, we only run the anytime version of the Landmark-based planner. It finds successively better plans, and given sufficient resources, it will find the optimal plan.
@@ -149,7 +149,7 @@ For the single solver configuration, we only run the anytime version of the Land
 
 \subsection{Existent Track}
 
-Our configuration for the existent track is almost the same as in the shortest track. The difference is that we terminate all components as soon as any component finds the first solution (or we prove unsolvability). This means we replace the anytime configuration with one that only runs until it finds the first solution. The single solver configuration just runs this configuration of the landmark-based planner, and the portfolio configuration also runs the optimal configuration of SymK, and the MIP solver.
+Our configuration for the existent track is almost the same as in the shortest track. The difference is that we include the counter abstraction and terminate all components as soon as any component finds the first solution (or we prove unsolvability). This means we replace the anytime configuration with one that only runs until it finds the first solution. The single solver configuration just runs this configuration of the landmark-based planner, and the portfolio configuration also runs the optimal configuration of SymK, and the MIP solver.
 
 \todo{\begin{itemize}
     \item Our configuration here is almost the same as in the shortest track. The difference is that we terminate all components as soon as any component finds the first solution (or we prove unsolvability).
