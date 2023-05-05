@@ -254,12 +254,13 @@ def parse_symk_response(process, track):
 class ScorpionAnytime(PlannerCommand):
     def __init__(self):
         cmd = [SCORPION, "{sas_filename}",
-               "--evaluator", "h=goalcount()",
+               "--landmarks", "lmg=lm_hm(use_orders=false, m=1)",
+               "--evaluator", "hlm=lmcount(lmg, admissible=True, pref=false)",
                "--search", """iterated([
-                    eager(single(h)),
-                    eager_wastar([h],w=5),
-                    eager_wastar([h],w=3),
-                    eager_wastar([h],w=2),
+                    eager(single(hlm)),
+                    eager_wastar([hlm],w=5),
+                    eager_wastar([hlm],w=3),
+                    eager_wastar([hlm],w=2),
                     astar(h)
                     ],repeat_last=false,continue_on_fail=false)"""]
         super().__init__(cmd)
@@ -271,8 +272,9 @@ class ScorpionAnytime(PlannerCommand):
 class ScorpionFirstSolution(PlannerCommand):
     def __init__(self):
         cmd = [SCORPION, "{sas_filename}",
-               "--evaluator", "h=goalcount()",
-               "--search", "eager(single(h))"]
+               "--landmarks", "lmg=lm_hm(use_orders=false, m=1)",
+               "--evaluator", "hlm=lmcount(lmg, admissible=True, pref=false)",
+               "--search", "eager(single(hlm))"]
         super().__init__(cmd)
 
     def parse_reponse(self, process, track):
