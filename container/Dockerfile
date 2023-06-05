@@ -24,6 +24,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
         python3-distutils \
         python3-pip \
         unzip \
+        patchelf \
     && rm -rf /var/lib/apt/lists/*
 
 # Build the CPLEX solver if available, otherwise fall back to SCIP.
